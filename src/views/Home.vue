@@ -2,8 +2,7 @@
   <div class="home container-fluid" id="app">
     <div class="row">
       <div class="col">
-        <h1>mars ro
-          <img alt="Vue logo" src="../assets/logo.png">er image browser</h1>
+        <h1>mars rover image browser</h1>
       </div>
     </div>
     <div class="row">
@@ -11,7 +10,7 @@
         <Nav_Controls></Nav_Controls>
       </div>
       <div class="col-10">
-        <img :src="current_img"></img>
+        <img class="img" :src="current_img"></img>
       </div>
     </div>
   </div>
@@ -25,7 +24,8 @@
     name: 'home',
     computed: {
       current_img() {
-        return this.$store.state.active_view.img_url;
+        let index = this.$store.state.active_view.img_index
+        return this.$store.state.photolist[index].img_src;
       }
     },
     components: {

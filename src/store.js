@@ -15,17 +15,25 @@ export default new Vuex.Store({
     active_view: {
       rover: "Curiosity",
 
-      camera: "MAST",
-      available_cameras: [],
+      loading: false,
+
+      camera: "",
 
       date_index: 0,
 
       img_index: 0,
-
-      img_url: "https://mars.jpl.nasa.gov/msl-raw-images/proj/msl/redops/ods/surface/sol/00100/opgs/edr/fcam/FRA_406374643EDR_F0050178FHAZ00301M_.JPG"
     },
 
-    manifest: [],
+    manifest: [{
+      "sol": 0,
+      "earth_date": "2012-08-06",
+      "total_photos": 3702,
+      "cameras": [
+        "CHEMCAM",
+        "FHAZ",
+        "MARDI",
+        "RHAZ"]
+    }],
 
     photolist: [{ img_src: "//placehold.it/200x200" }]
 
@@ -47,36 +55,53 @@ export default new Vuex.Store({
     setPhoto(state, index) {
       state.active_view.img_index = index
     },
-
-    refreshUrl(state) {
-      const index = state.active_view.img_index
-      state.active_view.img_url = state.photolist[index].img_src
+    startLoading(state) {
+      state.active_view.loading = true
+    },
+    endLoading(state) {
+      state.active_view.loading = false
     }
+
 
 
   },
   actions: {
     async setRover({ commit, dispatch }, rover) {
-
+      commit('startLoading')
       commit('setRover', rover)
+      commit("setDateIndex", 0)
+      commit('setPhoto', 0)
 
       try {
-        let res = await api.get('/manifests/' + this.state.active_view.rover.toLowerCase() + '?api_key=t3Kb6e87RheJxo50YkY92f4qpafTgdM0Qf46waXA')
-        commit("setManifest", res.data.photo_manifest.photos)
+        let manifestRes = await api.get('/manifests/' + this.state.active_view.rover.toLowerCase() + '?api_key=t3Kb6e87RheJxo50YkY92f4qpafTgdM0Qf46waXA')
+        let photolistRes = await api.get('/rovers/' + this.state.active_view.rover.toLowerCase() + '/photos?sol=0&api_key=t3Kb6e87RheJxo50YkY92f4qpafTgdM0Qf46waXA')
+
+        commit("setManifest", manifestRes.data.photo_manifest.photos)
+        commit("setPhotolist", photolistRes.data.photos)
+        commit("endLoading")
       } catch (err) { console.error(err) }
     },
+
     async setDate({ commit, dispatch }, index) {
-      commit('setDateIndex', index)
+      if (index >= 0 && index < this.state.manifest.length) {
+        commit('setDateIndex', index)
+        commit('setPhoto', 0)
+        commit('startLoading')
 
-      let soldate = this.state.manifest[index].sol
+        let soldate = this.state.manifest[index].sol
 
-      try {
-        let res = await api.get('/rovers/' + this.state.active_view.rover.toLowerCase() + '/photos?sol=' + soldate + '&api_key=t3Kb6e87RheJxo50YkY92f4qpafTgdM0Qf46waXA')
-        commit("setPhotolist", res.data.photos)
-      } catch (err) { console.error(err) }
+        try {
+          let res = await api.get('/rovers/' + this.state.active_view.rover.toLowerCase() + '/photos?sol=' + soldate + '&api_key=t3Kb6e87RheJxo50YkY92f4qpafTgdM0Qf46waXA')
+          commit("setPhotolist", res.data.photos)
+          commit("endLoading")
+        } catch (err) { console.error(err) }
+      }
     },
+
     setPhoto({ commit, dispatch }, index) {
-      commit('setPhoto', index)
+      if (index >= 0 && index < this.state.photolist.length) {
+        commit('setPhoto', index)
+      }
     }
   }
 })
