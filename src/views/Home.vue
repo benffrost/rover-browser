@@ -1,18 +1,22 @@
 <template>
-  <div class="home container-fluid" id="app">
-    <div class="row">
-      <div class="col">
-        <h1>mars rover image browser</h1>
-      </div>
-    </div>
-    <div class="row">
-      <div class="col-2">
-        <Nav_Controls></Nav_Controls>
-      </div>
-      <div class="col-10">
-        <img class="img" :src="current_img"></img>
-      </div>
-    </div>
+  <div id="app">
+    <b-container fluid class="home">
+      <b-row id="title">
+        <b-col>
+          <h1>mars rover image browser
+          </h1>
+        </b-col>
+      </b-row>
+      <b-row>
+        <b-col cols="2">
+          <Nav_Controls></Nav_Controls>
+        </b-col>
+        <b-col cols="10">
+          <b-spinner label="Spinning" v-if="isLoading"></b-spinner>
+          <b-img :src="current_img" fluid v-else></b-img>
+        </b-col>
+      </b-row>
+    </b-container>
   </div>
 </template>
 
@@ -23,6 +27,9 @@
   export default {
     name: 'home',
     computed: {
+      isLoading() {
+        return this.$store.state.active_view.loading
+      },
       current_img() {
         let index = this.$store.state.active_view.img_index
         return this.$store.state.photolist[index].img_src;

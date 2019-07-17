@@ -2,6 +2,9 @@ import Vue from 'vue'
 import Vuex from 'vuex'
 import axios from 'axios'
 
+let _key = "t3Kb6e87RheJxo50YkY92f4qpafTgdM0Qf46waXA"
+
+
 Vue.use(Vuex)
 
 let api = axios.create({
@@ -17,7 +20,7 @@ export default new Vuex.Store({
 
       loading: false,
 
-      camera: "",
+      camera: "All",
 
       date_index: 0,
 
@@ -35,7 +38,12 @@ export default new Vuex.Store({
         "RHAZ"]
     }],
 
-    photolist: [{ img_src: "//placehold.it/200x200" }]
+    photolist: [{
+      img_src: "//placehold.it/200x200",
+      camera: {
+        full_name: "Data Loading"
+      }
+    }]
 
 
   },
@@ -60,6 +68,9 @@ export default new Vuex.Store({
     },
     endLoading(state) {
       state.active_view.loading = false
+    },
+    setCamera(state, camera) {
+      state.active_view.camera = camera
     }
 
 
@@ -72,9 +83,19 @@ export default new Vuex.Store({
       commit("setDateIndex", 0)
       commit('setPhoto', 0)
 
+      let manSuffix = '/manifests/'
+      manSuffix += this.state.active_view.rover.toLowerCase()
+      manSuffix += '?api_key=' + _key
+
       try {
-        let manifestRes = await api.get('/manifests/' + this.state.active_view.rover.toLowerCase() + '?api_key=t3Kb6e87RheJxo50YkY92f4qpafTgdM0Qf46waXA')
-        let photolistRes = await api.get('/rovers/' + this.state.active_view.rover.toLowerCase() + '/photos?sol=0&api_key=t3Kb6e87RheJxo50YkY92f4qpafTgdM0Qf46waXA')
+        let manifestRes = await api.get(manSuffix)
+
+        let photolistSuffix = '/rovers/' + this.state.active_view.rover.toLowerCase()
+        photolistSuffix += '/photos'
+        photolistSuffix += '?sol=' + manifestRes.data.photo_manifest.photos[0].sol
+        photolistSuffix += '&api_key=' + _key
+
+        let photolistRes = await api.get(photolistSuffix)
 
         commit("setManifest", manifestRes.data.photo_manifest.photos)
         commit("setPhotolist", photolistRes.data.photos)
@@ -86,14 +107,21 @@ export default new Vuex.Store({
       if (index >= 0 && index < this.state.manifest.length) {
         commit('setDateIndex', index)
         commit('setPhoto', 0)
+        commit('setCamera', "All")
         commit('startLoading')
 
-        let soldate = this.state.manifest[index].sol
+        let suffix = '/rovers/' + this.state.active_view.rover.toLowerCase()
+        suffix += '/photos'
+        suffix += '?sol=' + this.state.manifest[index].sol
+        suffix += '&api_key=' + _key
+
 
         try {
-          let res = await api.get('/rovers/' + this.state.active_view.rover.toLowerCase() + '/photos?sol=' + soldate + '&api_key=t3Kb6e87RheJxo50YkY92f4qpafTgdM0Qf46waXA')
+          let res = await api.get(suffix)
+
           commit("setPhotolist", res.data.photos)
           commit("endLoading")
+
         } catch (err) { console.error(err) }
       }
     },
@@ -102,6 +130,29 @@ export default new Vuex.Store({
       if (index >= 0 && index < this.state.photolist.length) {
         commit('setPhoto', index)
       }
+    },
+
+    async setCamera({ commit, dispatch }, camera) {
+      commit('startLoading')
+      commit('setCamera', camera)
+      commit('setPhoto', 0)
+
+      let index = this.state.active_view.date_index
+
+      let suffix = '/rovers/' + this.state.active_view.rover.toLowerCase()
+      suffix += '/photos'
+      suffix += '?sol=' + this.state.manifest[index].sol
+      if (this.state.active_view.camera !== "All")
+        suffix += '&camera=' + this.state.active_view.camera.toLowerCase()
+      suffix += '&api_key=' + _key
+
+
+      try {
+        let res = await api.get(suffix)
+
+        commit("setPhotolist", res.data.photos)
+        commit("endLoading")
+      } catch (err) { console.error(err) }
     }
   }
 })
