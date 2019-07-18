@@ -8,7 +8,7 @@
         </b-col>
       </b-row>
       <b-row>
-        <b-col cols="2">
+        <b-col cols="4">
           <Nav_Controls></Nav_Controls>
         </b-col>
         <b-col cols="10">
@@ -24,6 +24,7 @@
   // @ is an alias to /src
   import Nav_Controls from '@/components/Nav_Controls'
 
+  import infobox from '@/components/Infobox.vue'
   export default {
     name: 'home',
     computed: {

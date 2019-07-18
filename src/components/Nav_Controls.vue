@@ -7,21 +7,13 @@
         </b-form-radio-group>
       </b-form-group>
     </div>
-    <div class="my-2 border">
-      <p>Day: {{ dateIndex+1 }}/{{ totalDays }} </p>
-
-      <b-button-group size="sm">
-        <b-button @click="decrementDate()" :disabled="loading">-</b-button>
-        <b-button @click="incrementDate()" :disabled="loading">+</b-button>
-      </b-button-group>
-    </div>
+    <DaySelect></DaySelect>
     <div class="my-2 border">
       <p>Camera:</p>
 
       <b-form-group id="camera-select" size="sm" stacked :disabled="loading">
         <b-form-radio-group id="btn-radios-3" button-variant="outline-secondary" v-model="selectedCamera"
           :options="cameraOptions" buttons stacked name="radio-rover-select" @change="setCamera()">
-          <--the problem is here-->
         </b-form-radio-group>
       </b-form-group>
     </div>
@@ -32,14 +24,15 @@
         <b-button @click="incrementPhoto()" :disabled="loading">+</b-button>
       </b-button-group>
     </div>
-    <div class="my-2 border">
-      <p>Info:</p>
-      <p>Earth Date: {{ earthDate }}</p>
-      <p>{{fullCameraName}}</p>
-    </div>
+    <infobox></infobox>
   </div>
 </template>
+
+
 <script>
+  import DaySelect from '@/components/DaySelect'
+  import Infobox from '@/components/Infobox'
+
   export default {
     name: 'Nav_Controls',
     data() {
@@ -58,20 +51,11 @@
       this.$store.dispatch("setRover", "Curiosity")
     },
     computed: {
-      dateIndex() {
-        return this.$store.state.active_view.date_index;
-      },
       rover() {
         return this.$store.state.active_view.rover;
       },
       photoIndex() {
         return this.$store.state.active_view.img_index
-      },
-      totalDays() {
-        return this.$store.state.manifest.length
-      },
-      earthDate() {
-        return this.$store.state.manifest[this.$store.state.active_view.date_index].earth_date
       },
       totalPhotos() {
         return this.$store.state.photolist.length
@@ -83,17 +67,12 @@
         return this.$store.state.active_view.camera
       },
       cameraOptions() {
-
         let inputArray = ['All'].concat(this.$store.state.manifest[this.$store.state.active_view.date_index].cameras)
         let outArray = []
         for (let i = 0; i < inputArray.length; i++) {
           outArray.push({ text: inputArray[i], value: inputArray[i] })
         }
         return outArray
-      },
-      fullCameraName() {
-        let index = this.$store.state.active_view.img_index
-        return this.$store.state.photolist[index].camera.full_name
       },
       loading() {
         return this.$store.state.active_view.loading
@@ -105,14 +84,6 @@
         this.$store.dispatch("setRover", this.selectedRover)
         this.selectedCamera = "All"
       },
-      incrementDate() {
-        this.$store.dispatch("setDate", this.dateIndex + 1)
-        this.selectedCamera = "All"
-      },
-      decrementDate() {
-        this.$store.dispatch("setDate", this.dateIndex - 1)
-        this.selectedCamera = "All"
-      },
       incrementPhoto() {
         this.$store.dispatch("setPhoto", this.photoIndex + 1)
       },
@@ -122,9 +93,11 @@
       setCamera() {
         this.$nextTick(() => this.$store.dispatch("setCamera", this.selectedCamera))
       }
-
     },
-    components: {}
+    components: {
+      DaySelect,
+      Infobox
+    }
   }
 </script>
 
