@@ -21,6 +21,7 @@
       <b-form-group id="camera-select" size="sm" stacked :disabled="loading">
         <b-form-radio-group id="btn-radios-3" button-variant="outline-secondary" v-model="selectedCamera"
           :options="cameraOptions" buttons stacked name="radio-rover-select" @change="setCamera()">
+          <--the problem is here-->
         </b-form-radio-group>
       </b-form-group>
     </div>
@@ -82,6 +83,7 @@
         return this.$store.state.active_view.camera
       },
       cameraOptions() {
+
         let inputArray = ['All'].concat(this.$store.state.manifest[this.$store.state.active_view.date_index].cameras)
         let outArray = []
         for (let i = 0; i < inputArray.length; i++) {
@@ -101,12 +103,15 @@
     methods: {
       setRover() {
         this.$store.dispatch("setRover", this.selectedRover)
+        this.selectedCamera = "All"
       },
       incrementDate() {
         this.$store.dispatch("setDate", this.dateIndex + 1)
+        this.selectedCamera = "All"
       },
       decrementDate() {
         this.$store.dispatch("setDate", this.dateIndex - 1)
+        this.selectedCamera = "All"
       },
       incrementPhoto() {
         this.$store.dispatch("setPhoto", this.photoIndex + 1)
@@ -115,7 +120,7 @@
         this.$store.dispatch("setPhoto", this.photoIndex - 1)
       },
       setCamera() {
-        this.$store.dispatch("setCamera", this.selectedCamera)
+        this.$nextTick(() => this.$store.dispatch("setCamera", this.selectedCamera))
       }
 
     },

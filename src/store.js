@@ -81,6 +81,7 @@ export default new Vuex.Store({
       commit('startLoading')
       commit('setRover', rover)
       commit("setDateIndex", 0)
+      commit('setCamera', "All")
       commit('setPhoto', 0)
 
       let manSuffix = '/manifests/'
@@ -142,8 +143,9 @@ export default new Vuex.Store({
       let suffix = '/rovers/' + this.state.active_view.rover.toLowerCase()
       suffix += '/photos'
       suffix += '?sol=' + this.state.manifest[index].sol
-      if (this.state.active_view.camera !== "All")
+      if (camera != "All") {
         suffix += '&camera=' + this.state.active_view.camera.toLowerCase()
+      }
       suffix += '&api_key=' + _key
 
 
