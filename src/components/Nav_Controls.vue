@@ -1,58 +1,40 @@
 <template>
   <div class="Nav_Controls">
-    <div class="border">
-      <b-form-group id="rover-select" label="Rover Selection">
-        <b-form-radio-group button-variant="outline-primary" v-model="selectedRover" :options="roverOptions" buttons
-          stacked name="radio-rover-select" @change="setRover()">
-        </b-form-radio-group>
-      </b-form-group>
-    </div>
-    <DaySelect></DaySelect>
-    <div class="my-2 border">
-      <p>Camera:</p>
 
-      <b-form-group id="camera-select" size="sm" stacked :disabled="loading">
-        <b-form-radio-group id="btn-radios-3" button-variant="outline-secondary" v-model="selectedCamera"
-          :options="cameraOptions" buttons stacked name="radio-rover-select" @change="setCamera()">
-        </b-form-radio-group>
-      </b-form-group>
-    </div>
-    <div class="my-2 border">
-      <p>Photo number: {{ photoIndex+1 }} / {{ totalPhotos }}</p>
-      <b-button-group size="sm">
-        <b-button @click="decrementPhoto()" :disabled="loading">-</b-button>
-        <b-button @click="incrementPhoto()" :disabled="loading">+</b-button>
-      </b-button-group>
-    </div>
+    <RoverSelect></RoverSelect>
+
+    <ItemSelect title="Day" setter="setDate" :index="dateIndex" :max="totalDays"></ItemSelect>
+
+    <CameraSelect></CameraSelect>
+
+    <ItemSelect title="Photo" setter="setPhoto" :index="photoIndex" :max="totalPhotos"></ItemSelect>
+
     <infobox></infobox>
+
   </div>
 </template>
 
 
 <script>
-  import DaySelect from '@/components/DaySelect'
+  import ItemSelect from '@/components/ItemSelect'
   import Infobox from '@/components/Infobox'
+  import RoverSelect from '@/components/RoverSelect'
+  import CameraSelect from '@/components/CameraSelect'
 
   export default {
     name: 'Nav_Controls',
     data() {
 
       return {
-        selectedRover: 'curiosity',
-        roverOptions: [
-          { text: 'Curiosity', value: 'curiosity' },
-          { text: 'Opportunity', value: 'opportunity' },
-          { text: 'Spirit', value: 'spirit' }],
-        selectedCamera: 'All'
-
       }
     },
     mounted() {
       this.$store.dispatch("setRover", "Curiosity")
     },
     computed: {
-      rover() {
-        return this.$store.state.active_view.rover;
+
+      loading() {
+        return this.$store.state.active_view.loading
       },
       photoIndex() {
         return this.$store.state.active_view.img_index
@@ -60,43 +42,21 @@
       totalPhotos() {
         return this.$store.state.photolist.length
       },
-      cameras() {
-        return this.$store.state.manifest[this.$store.state.active_view.date_index].cameras
+      dateIndex() {
+        return this.$store.state.active_view.date_index;
       },
-      camera() {
-        return this.$store.state.active_view.camera
-      },
-      cameraOptions() {
-        let inputArray = ['All'].concat(this.$store.state.manifest[this.$store.state.active_view.date_index].cameras)
-        let outArray = []
-        for (let i = 0; i < inputArray.length; i++) {
-          outArray.push({ text: inputArray[i], value: inputArray[i] })
-        }
-        return outArray
-      },
-      loading() {
-        return this.$store.state.active_view.loading
+      totalDays() {
+        return this.$store.state.manifest.length
       }
-
     },
     methods: {
-      setRover() {
-        this.$store.dispatch("setRover", this.selectedRover)
-        this.selectedCamera = "All"
-      },
-      incrementPhoto() {
-        this.$store.dispatch("setPhoto", this.photoIndex + 1)
-      },
-      decrementPhoto() {
-        this.$store.dispatch("setPhoto", this.photoIndex - 1)
-      },
-      setCamera() {
-        this.$nextTick(() => this.$store.dispatch("setCamera", this.selectedCamera))
-      }
+
     },
     components: {
-      DaySelect,
-      Infobox
+      ItemSelect,
+      RoverSelect,
+      Infobox,
+      CameraSelect
     }
   }
 </script>

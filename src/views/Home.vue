@@ -11,7 +11,7 @@
         <b-col cols="4">
           <Nav_Controls></Nav_Controls>
         </b-col>
-        <b-col cols="10">
+        <b-col cols="8">
           <b-spinner label="Spinning" v-if="isLoading"></b-spinner>
           <b-img :src="current_img" fluid v-else></b-img>
         </b-col>
